@@ -16,20 +16,11 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Clone official OpenJarvis
         run: git clone --depth 1 https://github.com/open-jarvis/OpenJarvis.git /tmp/OpenJarvis
-      - name: Copy source files to repository root
+      - name: Copy official files to repository root and commit
         run: |
-          cp -a /tmp/OpenJarvis/. .
-          rm -rf .git
-          # Restore this repository's git metadata after copying the upstream checkout.
-          git init
-          git remote add origin https://github.com/${{ github.repository }}.git
-          git fetch origin main
-          git checkout -B main origin/main
-          cp -a /tmp/OpenJarvis/. .
+          rsync -a --exclude='.git' /tmp/OpenJarvis/ ./
           git add -A
           if git diff --cached --quiet; then
             echo "No source changes to commit."
