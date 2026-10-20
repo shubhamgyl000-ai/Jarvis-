@@ -1,0 +1,39 @@
+name: Import official OpenJarvis source
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-openjarvis.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clone official OpenJarvis
+        run: git clone --depth 1 https://github.com/open-jarvis/OpenJarvis.git /tmp/OpenJarvis
+      - name: Copy source files to repository root
+        run: |
+          cp -a /tmp/OpenJarvis/. .
+          rm -rf .git
+          # Restore this repository's git metadata after copying the upstream checkout.
+          git init
+          git remote add origin https://github.com/${{ github.repository }}.git
+          git fetch origin main
+          git checkout -B main origin/main
+          cp -a /tmp/OpenJarvis/. .
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+          else
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "Import official OpenJarvis source"
+            git push origin HEAD:main
+          fi
