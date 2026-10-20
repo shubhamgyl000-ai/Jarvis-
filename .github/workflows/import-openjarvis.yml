@@ -18,9 +18,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Clone official OpenJarvis
         run: git clone --depth 1 https://github.com/open-jarvis/OpenJarvis.git /tmp/OpenJarvis
-      - name: Copy official files to repository root and commit
+      - name: Copy official source files to repository root and commit
         run: |
-          rsync -a --exclude='.git' /tmp/OpenJarvis/ ./
+          rsync -a --exclude='.git' --exclude='.github/workflows/***' /tmp/OpenJarvis/ ./
           git add -A
           if git diff --cached --quiet; then
             echo "No source changes to commit."
